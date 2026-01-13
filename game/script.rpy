@@ -1,14 +1,16 @@
-﻿# The script of the game goes in this file.
-
-# Declare characters used by this game. The color argument colorizes the
-# name of the character.
+# Declare characters used by this game.
+# The color argument colorizes the name of the character.
 
 #innit ====================================================================
 define ba = Character("BA Telkom", color ="#b30000")
 define chara1 = Character("siapa ya", color = "#ffbf00")
 define inc = Character("???")
-define narator = character(" ", color = "#00b300")
+define narator = Character(" ", color = "#00b300") # Fixed: Capitalized C to avoid NameError
 define kasir = Character("Kasir Jabrig", color ="#b30000")
+define pria = Character("Pria misterius")
+
+# Character object for the player
+define pc = Character("[you]", color="#0066ff")
 
 init python:
     player_max_hp = 100
@@ -18,16 +20,16 @@ init python:
     
     enemy_max_hp = 50
     enemy_hp = 50
-    enemy_atk = 8
+    enemy_atk = 8 # Fixed: Joined split lines
     enemy_def = 3
-    
-    #item
-    ###############
     
     in_battle = False
     player_defending = False
-    
     tutorial_step = 0
+
+# NEW: Inventory tracking
+default inventory = []
+default secret_unlocked = False
 
 # GAME START ====================================================================
 label start:
@@ -36,66 +38,45 @@ label start:
     $ potions = 2
     $ in_battle = False
     $ player_defending = False
+    $ guts = 0 # Fixed: Joined split lines
+    
+    # Initialize variables for exploration
+    $ current_floor = 1
+    $ you = "Jeruk" 
+    $ inventory = []
+    $ secret_unlocked = False
     
     jump opening_cutscene
 
-
 # OPENING CUTSCENE ====================================================================
 label opening_cutscene:
-
     #scene bg jlrafa at bg_zoom
     #show rafa biasa at zoom_rafa, top
-
     ba "Halo kawan"
-    ba "This game is a work of fiction! Any names, organizations, locations, or events appearing in this game are fictitious. 
-        Any resemblance to real names, organizations, locations, events, etc. is purely coincidental." 
+    ba "This game is a work of fiction! Any names, organizations, locations, or events appearing in this game are fictitious." 
     ba "Anak kecil dibawah 15 tahun engga boleh main"
 
-    #scene black with fade
-
-    #scene bg ###############
-    #with fade
-    
-    #show ###############
-    #with dissolve
-
     "(Saya kelaparan)"
-    #show ###############stiker ironman kelaparan
-    #with fade
     "(Makan dimana ya...)"
-    #hide ###############
-    #with fade
 
     inc "Wsg"
     "Hah? siapa itu?"
-    #show ###############
-    #with dissolve
     inc "Cuy"
     "Oh, halo cuy"
     narator "Ini ##########, dia suka makan mie ayam"
-    narator "Katanya kalau mie ayam jadi orang bakal dia kawinin"
-    narator "this guy might be retarded"
     chara1 "Lestgo ke jabrig cuy"
     "Jabrig lagi? tadi pagi kan udah"
     chara1 "Dari sumberku katanya ada menu rahasia"
     "fr?"
     chara1 "fr"
     "Yaudah, ayo ke sana"
-    #hide ############### 
-    #with fade
     
     scene black with fade
-    
     jump opening_dialogue
-
 
 # OPENING DIALOGUE ====================================================================
 label opening_dialogue:
-
-    #scene bg ###############
-    #with fade
     #show ###############kasir
-    #with dissolve
     chara1 "Bang"
     chara1 "Mau menu yang 'itu'"
     kasir "Say less"
@@ -103,220 +84,228 @@ label opening_dialogue:
 
     menu: 
         "Pesen menu yang sama":
-
-            kasir "Type shi"
+            $ guts = guts + 1
+            kasir "Sip"
+            narator "Kamu merasa tuff as hell"
+            narator "Guts bertambah +1"
+            pause
             kasir "Sebelum pesen kamu harus isi formulir ini dulu"
             "Formulir? buat apa coba?"
-            kasir "Rahasia, emang gitu kebijakannya kocak"
-            "Kamu juga ngisi formulirnya kah?"
-            #hide ###############kasir
-            #with fade
-            #show ###############chara1
-            #with dissolve
-            chara1 "Iya"
-            chara1 "Emang harus gitu cenah"
-            #hide ###############chara1
-            #with fade
-            #show ###############kasir
-            #with dissolve
+            kasir "Emang gitu kebijakannya kocak"
+            chara1 "Iya, emang harus gitu cenah"
             kasir "Ayo buruan kocak"
             "Oke gas"
+    
             narator "Kamu mengambil pensil dan mengisi formulir"
+            $ you = renpy.input("Enter your name:", length=20, default="Jeruk").strip()
+            if not you:
+                $ you = "Jeruk"
 
-            $ you = renpy.input("Enter your name:", length=20, default="Jeruk") #tambah warna kalo mau
-            $ you = you.strip()
-            if you == "":
-                $ you = "Hero"
-
-            you "Beres nih bang"
+            pc "Beres nih bang" 
             kasir "Nice"
             kasir "Saya simpan dulu berkasnya baru saya hidangkan menunya ya"
-            #hide ###############kasir
-            #with fade
+            scene black with fade
+            jump section1 
 
-            #jump ############### 
         "Pesen mie ayam biasa aja":
-            ###############
-            #jump ###############
+            $ guts = guts - 1
+            kasir "Cih. Bitchass."
+            "Mie ayam biasa 1"
+            kasir "Atas nama siapa?"
+            $ you = renpy.input("Enter your name:", length=20, default="Jeruk").strip()
+            if not you:
+                $ you = "Jeruk"
+            kasir "Oke"
+            scene black with fade
+            jump section1
 
-        "Run like a lil bihh":
-            jump no_balls
+# ACE ATTORNEY STYLE INVESTIGATION
+label section1:
+    #scene bg_jabrig_interior 
+    chara1 "Sambil nunggu mau ngapain?"
+    jump exploration_loop
 
+label exploration_loop:
+    menu:
+        "LOKASI: LANTAI [current_floor]"
+        
+        "Examine":
+            jump examine_logic
+            
+        "Talk":
+            jump talk_logic
+        
+        "Move":
+            jump move_logic     
 
-label no_balls: ############### ini ending 1
-    narator "Kamu lari keluar Jabrig dengan cepat"
-    kasir "No balls"
-    chara1 "No balls"
-return
+# MOVE MENU
+label move_logic:
+    menu:
+        "Ke Lantai 1" if current_floor != 1:
+            $ current_floor = 1
+            "Kamu kembali ke lantai 1."
+            jump exploration_loop
+        
+        "Ke Lantai 2" if current_floor != 2:
+            $ current_floor = 2
+            "Kamu naik ke lantai 2. Di sini banyak meja kosong."
+            "Kamu melihat seorang pria duduk di pojok."
+            jump exploration_loop
+            
+        "Ke Lantai 3" if current_floor != 3:
+            $ current_floor = 3
+            "Lantai 3 terlihat seperti tempat latihan..."
+            jump exploration_loop
+            
+        "Back":
+            jump exploration_loop
 
+# TALK & TRADING MENU
+label talk_logic:
+    if current_floor == 1:
+        menu:
+            "Tanya soal menu rahasia":
+                chara1 "Sabar, lagi dibikin sama Bang Jabrig."
+                jump exploration_loop
+            
+            "Bicara dengan Chara1" if "Discount Voucher" not in inventory and "Sambal Setan" not in inventory:
+                chara1 "Eh, tadi aku nemu ini di jalan. Mau?"
+                menu:
+                    "Terima":
+                        "Kamu mendapatkan Discount Voucher!"
+                        $ inventory.append("Discount Voucher")
+                        jump exploration_loop
+                    "Tolak":
+                        jump exploration_loop
 
+            "Bicara dengan Kasir" if "Discount Voucher" in inventory:
+                kasir "Wah, itu voucher punyaku yang hilang! Mau tukar sama sambal spesial?"
+                menu:
+                    "Tukar":
+                        $ inventory.remove("Discount Voucher")
+                        $ inventory.append("Sambal Setan")
+                        "Kamu mendapatkan Sambal Setan!"
+                        jump exploration_loop
+                    "Jangan":
+                        jump exploration_loop
 
+    elif current_floor == 2:
+        menu:
+            "Ajak Bicara Pria Misterius":
+                if "Sambal Setan" in inventory:
+                    pria "Bau itu... Sambal Setan! Berikan padaku, dan aku akan memberimu harta karun."
+                    menu:
+                        "Tukar":
+                            $ inventory.remove("Sambal Setan")
+                            $ inventory.append("Ancient Coin")
+                            "Pria itu memberikanmu Koin Kuno (Ancient Coin)."
+                            jump exploration_loop
+                        "Tolak":
+                            jump exploration_loop
+                else:
+                    pc "Halo bang!"
+                    pria ". . ."
+                    pria "Jangan ganggu aku kalau tidak bawa makanan pedas."
+                    jump exploration_loop
+            "Back":
+                jump exploration_loop
 
+    elif current_floor == 3:
+        "Tidak ada orang di sini untuk diajak bicara."
+        jump exploration_loop
+    return
 
+# EXAMINE MENU
+label examine_logic:
+    if current_floor == 1:
+        "Meja kasir terlihat sangat berminyak."
+        jump exploration_loop
+    elif current_floor == 3:
+        "Ada dummy latihan di pojok ruangan."
+        if "Ancient Coin" in inventory:
+            "Koin di sakumu mulai bersinar..."
+            menu:
+                "Gunakan Koin pada Dummy":
+                    "Dummy itu berubah menjadi Secret Boss!"
+                    $ secret_unlocked = True
+                    jump battle_tutorial_setup 
+                "Abaikan":
+                    jump exploration_loop
+        else:
+            menu:
+                "Pukul dummy-nya":
+                    "Sepertinya ini saat yang tepat untuk pemanasan."
+                    jump battle_tutorial_setup 
+                "Jangan disentuh":
+                    jump exploration_loop
+    else:
+        "Hening. Hanya ada meja dan kursi kayu biasa."
+        jump exploration_loop
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#########################################################################################################
-#########################################################################################################
-# BATTLE SETUP ====================================================================
+# BATTLE SETUP
 label battle_tutorial_setup:
-    scene bg_arena  # PLACEHOLDER: Training arena background
-    with fade
-    
-    show protagonist_battle at left  # PLACEHOLDER: Battle stance sprite
-    with dissolve
-    
-    "Here we go. The training dummy is already set up."
-    
-    show enemy_dummy at right  # PLACEHOLDER: Training dummy enemy sprite
-    with dissolve
-    
-    play music "bgm_battle.ogg" fadein 1.0  # PLACEHOLDER: Battle music
-    
-    "Let's see what I remember..."
-    
+    if secret_unlocked:
+        "SECRET BOSS: THE GOLDEN DUMMY APPEARS!"
+        $ enemy_hp = 200
+        $ enemy_atk = 20
+    else:
+        "Here we go. The training dummy is already set up."
+        $ enemy_hp = 50
+        $ enemy_atk = 8
+
     $ in_battle = True
     $ tutorial_step = 0
-    
     jump battle_tutorial
 
-# BATTLE SYSTEM ====================================================================
+# BATTLE SYSTEM
 label battle_tutorial:
-    # Display battle status
     if tutorial_step == 0:
         "The combat interface shows my status and the enemy's."
         "[player_hp]/[player_max_hp] HP | Potions: [potions]"
-        "Training Dummy: [enemy_hp]/[enemy_max_hp] HP"
+        "Enemy: [enemy_hp] HP"
         $ tutorial_step = 1
     
-    # Check victory condition
     if enemy_hp <= 0:
         jump victory_screen
     
-    # Check defeat (shouldn't happen in tutorial, but just in case)
     if player_hp <= 0:
-        "Wait, this is just training... Let me try that again."
-        $ player_hp = player_max_hp
-        $ enemy_hp = enemy_max_hp
-        $ potions = 2
-        jump battle_tutorial
-    
-    # PLAYER TURN ====================================================================
-    "My turn!"
-    
+        "Kalah..."
+        return # Game Over
+
     menu:
-        "What should I do?"
-        
         "Attack":
-            "I swing my sword at the dummy!"
-            play sound "sfx_attack.ogg"  # PLACEHOLDER: Attack sound
-            
             $ damage = max(1, player_atk - enemy_def)
             $ enemy_hp -= damage
-            
             "Hit for [damage] damage!"
-            "Training Dummy: [enemy_hp]/[enemy_max_hp] HP"
-            
-            if enemy_hp <= 0:
-                jump victory_screen
         
         "Defend":
-            "I raise my guard and prepare for the counter-attack."
             $ player_defending = True
-            "Defense up for this turn!"
+            "Defense up!"
         
         "Use Item" if potions > 0:
-            menu:
-                "Which item?"
-                
-                "Potion ([potions] left)" if potions > 0:
-                    play sound "sfx_heal.ogg"  # PLACEHOLDER: Healing sound
-                    $ heal_amount = 30
-                    $ player_hp = min(player_max_hp, player_hp + heal_amount)
-                    $ potions -= 1
-                    
-                    "Used a potion and recovered [heal_amount] HP!"
-                    "[player_hp]/[player_max_hp] HP | Potions: [potions]"
-                
-                "Never mind":
-                    jump battle_tutorial
-        
-        "Use Item" if potions == 0:
-            "I'm out of potions!"
-            jump battle_tutorial
-    
-    # ENEMY TURN ====================================================================
+            $ player_hp = min(player_max_hp, player_hp + 30)
+            $ potions -= 1
+            "Used potion!"
+
+    # Enemy Turn
     if enemy_hp > 0:
-        "The training dummy strikes back!"
-        play sound "sfx_enemy_attack.ogg"  # PLACEHOLDER: Enemy attack sound
-        
         if player_defending:
             $ damage = max(1, (enemy_atk - player_def) // 2)
             $ player_defending = False
-            "My defense reduced the damage!"
         else:
             $ damage = max(1, enemy_atk - player_def)
-        
         $ player_hp -= damage
-        
         "Took [damage] damage!"
-        "[player_hp]/[player_max_hp] HP"
     
     jump battle_tutorial
 
-# VICTORY SEQUENCE ====================================================================
 label victory_screen:
-    stop music fadeout 1.0
-    play sound "sfx_victory.ogg"  # PLACEHOLDER: Victory fanfare
-    
-    hide enemy_dummy with dissolve
-    
-    "The training dummy falls apart!"
-    
-    play music "bgm_victory.ogg"  # PLACEHOLDER: Victory theme
-    
-    scene bg_arena
-    show protagonist_battle at center
-    with dissolve
-    
+    "The dummy falls apart!"
+    if secret_unlocked:
+        "You obtained the LEGENDARY MIE AYAM!"
     "Training complete!"
-    "Not bad. I think I've got the basics down."
-    
-    $ in_battle = False
-    
     jump endgame
 
-# END SCREEN ====================================================================
 label endgame:
-    scene black with fade
-    stop music fadeout 2.0
-    
-    centered "{size=+20}Tutorial Complete!{/size}"
-    
-    "You've mastered the basics of combat."
-    "You're ready for whatever comes next."
-    
-    centered "Thanks for playing!"
-    
-    menu:
-        "What would you like to do?"
-        
-        "Return to Main Menu":
-            return
-        
-        "Quit Game":
-            $ renpy.quit()
-    
+    "Tutorial Complete!"
     return

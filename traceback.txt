@@ -1,28 +1,39 @@
 ﻿I'm sorry, but an uncaught exception occurred.
 
 While running game code:
-  File "game/script.rpy", line 10, in script
-    define narator = character(" ", color = "#00b300")
-  File "game/script.rpy", line 10, in <module>
-    define narator = character(" ", color = "#00b300")
-NameError: name 'character' is not defined
+  File "game/script.rpy", line 177, in script
+    menu:
+NameError: name 'current_floor' is not defined
 
 -- Full Traceback ------------------------------------------------------------
 
 Full traceback:
-  File "game/script.rpy", line 10, in script
-    define narator = character(" ", color = "#00b300")
-  File "D:\Renpy\renpy-8.3.7-sdk\renpy\ast.py", line 2248, in execute
-    self.set()
-  File "D:\Renpy\renpy-8.3.7-sdk\renpy\ast.py", line 2262, in set
-    value = renpy.python.py_eval_bytecode(self.code.bytecode)
+  File "game/script.rpy", line 177, in script
+    menu:
+  File "D:\Renpy\renpy-8.3.7-sdk\renpy\ast.py", line 1628, in execute
+    renpy.exports.say(None, "\n".join(narration), interact=False)
+  File "D:\Renpy\renpy-8.3.7-sdk\renpy\exports\sayexports.py", line 132, in say
+    who(what, *args, **kwargs)
+  File "D:\Renpy\renpy-8.3.7-sdk\renpy\character.py", line 1456, in __call__
+    what = self.prefix_suffix("what", self.what_prefix, what, self.what_suffix)
+  File "D:\Renpy\renpy-8.3.7-sdk\renpy\character.py", line 1369, in prefix_suffix
+    return (sub(prefix) + sub(body) + sub(suffix))
+  File "D:\Renpy\renpy-8.3.7-sdk\renpy\character.py", line 1349, in sub
+    return renpy.substitutions.substitute(s, scope=scope, force=force, translate=translate)[0]
+  File "D:\Renpy\renpy-8.3.7-sdk\renpy\substitutions.py", line 373, in substitute
+    s = interpolate(s, variables) # type: ignore
+  File "D:\Renpy\renpy-8.3.7-sdk\renpy\substitutions.py", line 86, in interpolate
+    raise e
+  File "D:\Renpy\renpy-8.3.7-sdk\renpy\substitutions.py", line 78, in interpolate
+    value = renpy.python.py_eval(code, {}, scope)
+  File "D:\Renpy\renpy-8.3.7-sdk\renpy\python.py", line 1218, in py_eval
+    return py_eval_bytecode(code, globals, locals)
   File "D:\Renpy\renpy-8.3.7-sdk\renpy\python.py", line 1211, in py_eval_bytecode
     return eval(bytecode, globals, locals)
-  File "game/script.rpy", line 10, in <module>
-    define narator = character(" ", color = "#00b300")
-NameError: name 'character' is not defined
+  File "<none>", line 1, in <module>
+NameError: name 'current_floor' is not defined
 
 Windows-10-10.0.26100 AMD64
 Ren'Py 8.3.7.25031702
 JarbigRPG 1.0
-Thu Jan  8 13:01:42 2026
+Tue Jan 13 18:14:51 2026
